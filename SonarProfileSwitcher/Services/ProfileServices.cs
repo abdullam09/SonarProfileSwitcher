@@ -19,7 +19,7 @@ namespace SonarProfileSwitcher.Services
 
         public IList<Profile> GetProfiles()
         {
-            var fileContent = _fileServices.ReadFile("profiles.json");
+            var fileContent = _fileServices.ReadFile(@"F:\Sonar Auto Switch\profiles.json");
             if (fileContent != null)
             {
                 return JsonConvert.DeserializeObject<List<Profile>>(fileContent);
