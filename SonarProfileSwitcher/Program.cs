@@ -16,7 +16,7 @@ namespace SonarProfileSwitcher
             // Configure Serilog
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.Console()
-                .WriteTo.File(new CompactJsonFormatter(), "logs/log-.txt", rollingInterval: RollingInterval.Day)
+                .WriteTo.File(new CompactJsonFormatter(), @"F:\Sonar Auto Switch\logs\log-.txt", rollingInterval: RollingInterval.Day)
                 .CreateLogger();
 
             // Create a host builder
