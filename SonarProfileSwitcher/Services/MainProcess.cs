@@ -52,6 +52,11 @@ namespace SonarProfileSwitcher.Services
                     noProfileActive = true;
                     foreach (var profile in profiles)
                     {
+                        if (string.IsNullOrEmpty(profile.profileName) || string.IsNullOrEmpty(profile.exeFile))
+                        {
+                            continue;
+                        }
+
                         if (_processServices.exeFileExists(profile.exeFile))
                         {
                             await ActivateProfile(sonarGamingConfigurations, profile, cancellationToken);
