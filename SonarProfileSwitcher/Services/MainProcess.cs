@@ -20,17 +20,21 @@ namespace SonarProfileSwitcher.Services
         private readonly IProfileServices _profileServices;
         private readonly IProcessServices _processServices;
         private readonly ISmartScreenServices _smartScreenServices;
+        private readonly IKeyboardLayoutService _keyboardLayoutService;
         private bool noProfileActive = true;
         private SonarGamingConfiguration activeConfig;
+        private string keyboardLayout;
+        private Profile activeProfile;
 
         public MainProcess(ISteelSeriesSonarService steelSeriesSonarService, IProcessServices processServices,
-            IProfileServices profileServices, ISmartScreenServices smartScreenServices, ILogger<MainProcess> logger)
+            IProfileServices profileServices, ISmartScreenServices smartScreenServices, IKeyboardLayoutService keyboardLayoutService, ILogger<MainProcess> logger)
         {
             _logger = logger;
             _steelSeriesSonarService = steelSeriesSonarService;
             _profileServices = profileServices;
             _processServices = processServices;
             _smartScreenServices = smartScreenServices;
+            _keyboardLayoutService = keyboardLayoutService;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -42,6 +46,7 @@ namespace SonarProfileSwitcher.Services
                 profileName = "Default",
                 exeFile = ""
             };
+
 
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -72,6 +77,14 @@ namespace SonarProfileSwitcher.Services
                         await ActivateProfile(sonarGamingConfigurations, defaultProfile, cancellationToken);
                     }
 
+                    var activeKeyboardLayout = await _keyboardLayoutService.CheckKeyboardLayout();
+                    if (!activeKeyboardLayout.Equals(keyboardLayout))
+                    {
+                        keyboardLayout = activeKeyboardLayout;
+                        _logger.LogInformation($"Activate keyboard Layout {keyboardLayout}");
+                        await PrintToSmartScreen();
+                    }
+
                     await Task.Delay(_interval, cancellationToken);
                 }
                 catch (Exception ex)
@@ -90,11 +103,17 @@ namespace SonarProfileSwitcher.Services
                 if (activeConfig == null || activeConfig.Id != matchedSonarGamingConfiguration.Id)
                 {
                     await _steelSeriesSonarService.ChangeSelectedGamingConfiguration(matchedSonarGamingConfiguration, cancellationToken);
-                    await _smartScreenServices.Print(profile.profileName);
+                    activeProfile = profile;
+                    await PrintToSmartScreen();
                     activeConfig = matchedSonarGamingConfiguration;
                     _logger.LogInformation($"Activate profile {profile.profileName}");
                 }
             }
+        }
+
+        private async Task PrintToSmartScreen()
+        {
+            await _smartScreenServices.Print(activeProfile.profileName, keyboardLayout);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

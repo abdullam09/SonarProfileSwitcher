@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace SonarProfileSwitcher.Interfaces
 {
-    public interface ISmartScreenServices
+    public interface IKeyboardLayoutService
     {
-        Task Print(string profileName,string keyboardLayout);
+        Task<string> CheckKeyboardLayout();
     }
 }

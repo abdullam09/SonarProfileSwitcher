@@ -31,6 +31,7 @@ namespace SonarProfileSwitcher
                     services.AddTransient<IProfileServices, ProfileServices>();
                     services.AddTransient<IProcessServices, ProcessServices>();
                     services.AddTransient<ISmartScreenServices, SmartScreenServices>();
+                    services.AddTransient<IKeyboardLayoutService, KeyboardLayoutService>();
                 })
                 .Build();
 

@@ -16,13 +16,14 @@ namespace SonarProfileSwitcher.Services
             _processServices = processServices;
         }
 
-        public async Task Print(string profileName)
+        public async Task Print(string profileName, string keyboardLayout)
         {
             await ChangeScreenOri("p");
             await ClearScreen();
             await ChangeScreenOri("l");
             await ShowTextOnScreen("Active Profile");
             await ShowActiveProfileOnScreen(profileName);
+            await ShowActiveKeyboardLayoutOnScreen(keyboardLayout);
         }
 
         private async Task ChangeScreenOri(string ori)
@@ -44,6 +45,12 @@ namespace SonarProfileSwitcher.Services
         {
             var modifiedText = profileName.Replace(" ", "_");
             await _processServices.RunExe(exeFilePath, $"text -r a -p com3 -t {modifiedText}_ -x 5 -y 130 -s 25 -b FFFFFF -c 0000FF -f \"aero matics display\"");
+        }
+
+        private async Task ShowActiveKeyboardLayoutOnScreen(string keyboardLayout)
+        {
+            var modifiedText = keyboardLayout?.Replace(" ", "_");
+            await _processServices.RunExe(exeFilePath, $"text -r a -p com3 -t Keyboard_Layout:_{modifiedText}_ -x 5 -y 230 -s 25 -b FFFFFF -c 0000FF -f \"aero matics display\"");
         }
     }
 }
