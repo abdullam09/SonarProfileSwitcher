@@ -43,7 +43,7 @@ namespace SonarProfileSwitcher.Services
 
             var defaultProfile = new Profile
             {
-                profileName = "Default",
+                profileName = "Flat",
                 exeFile = ""
             };
 
