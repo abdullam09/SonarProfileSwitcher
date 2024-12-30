@@ -2,13 +2,6 @@
 using Microsoft.Extensions.Logging;
 using SonarProfileSwitcher.Interfaces;
 using SonarProfileSwitcher.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SonarProfileSwitcher.Services
 {
@@ -89,13 +82,14 @@ namespace SonarProfileSwitcher.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex.Message);
+                    _logger.LogError(ex.ToString());
                 }
             }
         }
 
         private async Task ActivateProfile(IEnumerable<SonarGamingConfiguration> sonarGamingConfigurations, Profile profile, CancellationToken cancellationToken)
         {
+            activeProfile = profile;
             var matchedSonarGamingConfiguration = sonarGamingConfigurations.FirstOrDefault(c => c.Name == profile.profileName);
             if (matchedSonarGamingConfiguration != null)
             {
