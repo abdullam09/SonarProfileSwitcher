@@ -12,7 +12,7 @@ namespace SonarProfileSwitcher.Services
         private readonly ISteelSeriesSonarService _steelSeriesSonarService;
         private readonly IProfileServices _profileServices;
         private readonly IProcessServices _processServices;
-        private readonly ISmartScreenServices _smartScreenServices;
+        private readonly IWidgetStateService _widgetStateService;
         private readonly IKeyboardLayoutService _keyboardLayoutService;
         private bool noProfileActive = true;
         private SonarGamingConfiguration activeConfig;
@@ -20,13 +20,13 @@ namespace SonarProfileSwitcher.Services
         private Profile activeProfile;
 
         public MainProcess(ISteelSeriesSonarService steelSeriesSonarService, IProcessServices processServices,
-            IProfileServices profileServices, ISmartScreenServices smartScreenServices, IKeyboardLayoutService keyboardLayoutService, ILogger<MainProcess> logger)
+            IProfileServices profileServices, IWidgetStateService widgetStateService, IKeyboardLayoutService keyboardLayoutService, ILogger<MainProcess> logger)
         {
             _logger = logger;
             _steelSeriesSonarService = steelSeriesSonarService;
             _profileServices = profileServices;
             _processServices = processServices;
-            _smartScreenServices = smartScreenServices;
+            _widgetStateService = widgetStateService;
             _keyboardLayoutService = keyboardLayoutService;
         }
 
@@ -75,7 +75,7 @@ namespace SonarProfileSwitcher.Services
                     {
                         keyboardLayout = activeKeyboardLayout;
                         _logger.LogInformation($"Activate keyboard Layout {keyboardLayout}");
-                        await PrintToSmartScreen();
+                        UpdateWidget();
                     }
 
                     await Task.Delay(_interval, cancellationToken);
@@ -98,16 +98,16 @@ namespace SonarProfileSwitcher.Services
                 {
                     await _steelSeriesSonarService.ChangeSelectedGamingConfiguration(matchedSonarGamingConfiguration, cancellationToken);
                     activeProfile = profile;
-                    await PrintToSmartScreen();
+                    UpdateWidget();
                     activeConfig = matchedSonarGamingConfiguration;
                     _logger.LogInformation($"Activate profile {profile.profileName}");
                 }
             }
         }
 
-        private async Task PrintToSmartScreen()
+        private void UpdateWidget()
         {
-            await _smartScreenServices.Print(activeProfile.profileName, keyboardLayout);
+            _widgetStateService.Update(activeProfile?.profileName ?? "Flat", keyboardLayout ?? "");
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

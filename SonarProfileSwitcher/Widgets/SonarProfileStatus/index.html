@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sonar Profile Status</title>
+  <link rel="icon" type="image/svg+xml" href="resources/icon.svg" />
+  <meta name="x-icue-widget-group" content="Sonar Profile Switcher" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: #10131a; color: #f7f8fb; font-family: Arial, sans-serif; overflow: hidden; }
+    main { min-height: 100vh; padding: 7vh 8vw; display: flex; flex-direction: column; justify-content: center; gap: 4vh; }
+    .eyebrow { color: #8ea0bd; font-size: clamp(14px, 3vw, 28px); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    .profile { font-size: clamp(30px, 9vw, 98px); font-weight: 800; line-height: 1.05; overflow-wrap: anywhere; }
+    .layout { color: #56bcff; font-size: clamp(20px, 5vw, 52px); font-weight: 700; }
+    .status { color: #8ea0bd; font-size: clamp(12px, 2.5vw, 24px); }
+    .offline .profile, .offline .layout { color: #657089; }
+  </style>
+</head>
+<body>
+  <main id="app" class="offline">
+    <div class="eyebrow">SteelSeries Sonar</div>
+    <div id="profile" class="profile">Waiting for app…</div>
+    <div id="layout" class="layout"></div>
+    <div id="status" class="status">Start SonarProfileSwitcher to connect.</div>
+  </main>
+  <script>
+    const endpoint = "http://127.0.0.1:9783/status";
+    const profile = document.getElementById("profile");
+    const layout = document.getElementById("layout");
+    const status = document.getElementById("status");
+    const app = document.getElementById("app");
+
+    async function refresh() {
+      try {
+        const response = await fetch(endpoint, { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        profile.textContent = data.ProfileName || "Flat";
+        layout.textContent = data.KeyboardLayout ? `Keyboard: ${data.KeyboardLayout.toUpperCase()}` : "Keyboard layout unavailable";
+        status.textContent = "Connected";
+        app.classList.remove("offline");
+      } catch {
+        profile.textContent = "Waiting for app…";
+        layout.textContent = "";
+        status.textContent = "Start SonarProfileSwitcher to connect.";
+        app.classList.add("offline");
+      }
+    }
+
+    refresh();
+    setInterval(refresh, 1000);
+  </script>
+</body>
+</html>
