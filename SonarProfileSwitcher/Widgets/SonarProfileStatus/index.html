@@ -9,9 +9,9 @@
   <meta name="x-icue-widget-group" content="tr('Sonar Profile Switcher')" />
   <meta name="x-icue-property" content="showKeyboard" data-label="tr('Show Keyboard Layout')" data-type="switch" data-default="true" />
   <meta name="x-icue-property" content="refreshInterval" data-label="tr('Refresh Interval')" data-type="slider" data-default="1" data-min="1" data-max="30" data-step="1" data-unit-label="'s'" />
-  <meta name="x-icue-property" content="textColor" data-label="tr('Text Color')" data-type="color" data-default="'#f5f8fc'" />
-  <meta name="x-icue-property" content="accentColor" data-label="tr('Accent Color')" data-type="color" data-default="'#56e0d0'" />
-  <meta name="x-icue-property" content="backgroundColor" data-label="tr('Background Color')" data-type="color" data-default="'#101c2c'" />
+  <meta name="x-icue-property" content="textColor" data-label="tr('Text Color')" data-type="color" data-default="'#f2f0eb'" />
+  <meta name="x-icue-property" content="accentColor" data-label="tr('Accent Color')" data-type="color" data-default="'#e53935'" />
+  <meta name="x-icue-property" content="backgroundColor" data-label="tr('Background Color')" data-type="color" data-default="'#101010'" />
   <meta name="x-icue-property" content="transparency" data-label="tr('Background Transparency')" data-type="slider" data-default="0" data-min="0" data-max="100" data-step="1" data-unit-label="'%'" />
   <script type="application/json" id="x-icue-groups">
     [{"title":"tr('Sonar Profile Status')","properties":["showKeyboard","refreshInterval"]},{"title":"tr('Widget Personalization')","properties":["textColor","accentColor","backgroundColor","transparency"]}]
@@ -26,8 +26,8 @@
       --secondary: calc(var(--layout-unit) * 6);
       --icon: calc(var(--layout-unit) * 11);
       --radius: calc(var(--layout-unit) * 4);
-      --text-color: #f5f8fc; --accent-color: #56e0d0;
-      --background-color: #101c2c; --background-opacity: 1;
+      --text-color: #f2f0eb; --accent-color: #e53935;
+      --background-color: #101010; --background-opacity: 1;
     }
     * { box-sizing: border-box; }
     html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
@@ -61,6 +61,38 @@
     @media (max-width: 400px) and (max-height: 240px) {
       .brand-name, .caption { display: none; }
     }
+    @font-face {
+      font-family: "Doto";
+      src: url("resources/Doto.ttf") format("truetype");
+      font-weight: 100 900;
+      font-display: swap;
+    }
+    :root { --radius: calc(var(--layout-unit) * 8); }
+    .background {
+      background-color: var(--background-color);
+      background-image: radial-gradient(circle, rgba(255,255,255,.045) 1px, transparent 1.2px);
+      background-size: calc(var(--layout-unit) * 3) calc(var(--layout-unit) * 3);
+    }
+    .brand-name, .caption, .badge, .note {
+      font-family: "Consolas", "Courier New", monospace;
+      font-weight: 400;
+    }
+    .brand-name { letter-spacing: .18em; }
+    .headset { color: var(--text-color); }
+    .badge { color: var(--text-color); border-color: rgba(255,255,255,.24); text-transform: uppercase; letter-spacing: .06em; }
+    .dot { background: var(--accent-color); width: calc(var(--layout-unit) * 2); height: calc(var(--layout-unit) * 2); }
+    .hero-block { border-top: 1px solid rgba(255,255,255,.19); padding-top: calc(var(--gap) * .85); gap: calc(var(--gap) * .6); }
+    .caption { font-size: calc(var(--label) * .85); letter-spacing: .18em; opacity: .6; }
+    .profile {
+      font-family: "Doto", "Consolas", monospace;
+      font-weight: 800; font-variation-settings: "ROND" 100;
+      text-transform: uppercase; letter-spacing: -.035em; line-height: 1.2;
+    }
+    .keyboard { align-self: flex-start; border-radius: var(--radius); border: 1px solid rgba(255,255,255,.24); padding: calc(var(--gap) * .4) calc(var(--gap) * .9); }
+    .keyboard svg { color: var(--text-color); width: calc(var(--secondary) * .75); height: calc(var(--secondary) * .75); }
+    #layout { font-family: "Doto", "Consolas", monospace; font-weight: 800; font-variation-settings: "ROND" 100; }
+    [data-state="offline"] .dot, [data-state="error"] .dot { background: transparent; border: 1px solid currentColor; }
+    @media (max-aspect-ratio: 3/2) { :root { --hero: calc(var(--layout-unit) * 10); } }
   </style>
 </head>
 <body>
@@ -115,9 +147,9 @@
         return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback;
       }
       function settings() {
-        root.style.setProperty("--text-color", color(typeof textColor !== "undefined" ? textColor : null, "#f5f8fc"));
-        root.style.setProperty("--accent-color", color(typeof accentColor !== "undefined" ? accentColor : null, "#56e0d0"));
-        root.style.setProperty("--background-color", color(typeof backgroundColor !== "undefined" ? backgroundColor : null, "#101c2c"));
+        root.style.setProperty("--text-color", color(typeof textColor !== "undefined" ? textColor : null, "#f2f0eb"));
+        root.style.setProperty("--accent-color", color(typeof accentColor !== "undefined" ? accentColor : null, "#e53935"));
+        root.style.setProperty("--background-color", color(typeof backgroundColor !== "undefined" ? backgroundColor : null, "#101010"));
         root.style.setProperty("--background-opacity", 1 - bounded(typeof transparency !== "undefined" ? transparency : 0, 0, 0, 100) / 100);
         keyboardVisible = typeof showKeyboard === "undefined" || (showKeyboard !== false && showKeyboard !== "false" && showKeyboard !== 0);
         const next = bounded(typeof refreshInterval !== "undefined" ? refreshInterval : 1, 1, 1, 30) * 1000;

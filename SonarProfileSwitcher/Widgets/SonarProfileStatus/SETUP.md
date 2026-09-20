@@ -1,10 +1,10 @@
-# Sonar Profile Status 1.1.0
+# Sonar Profile Status 1.2.0
 
 Private-use iCUE widget for Xeneon Edge (dashboard_lcd), with responsive horizontal and vertical layouts.
 
 ## Install
 1. Keep SonarProfileSwitcher running with SteelSeries GG/Sonar enabled.
-2. Import SonarProfileStatus-1.1.0.icuewidget through iCUE's widget import UI and add it to your Xeneon Edge layout. If an older version is already added, replace that widget instance if iCUE does not update it automatically.
+2. Import SonarProfileStatus-1.2.0.icuewidget through iCUE's widget import UI and add it to your Xeneon Edge layout. If an older version is already added, replace that widget instance if iCUE does not update it automatically.
 3. Open the widget settings to customize it. On Xeneon Edge, enable Custom Style to override the device's colors.
 
 Requires Windows, iCUE 5.47 or later, and widget framework 1.4.0 or later. No extra plugins, accounts or API keys.
@@ -12,9 +12,9 @@ Requires Windows, iCUE 5.47 or later, and widget framework 1.4.0 or later. No ex
 ## Settings
 - Show Keyboard Layout: on.
 - Refresh Interval: 1 second; adjustable from 1 to 30 seconds.
-- Text Color: #f5f8fc.
-- Accent Color: #56e0d0 (headset and connection indicator).
-- Background Color: #101c2c.
+- Text Color: #f2f0eb.
+- Accent Color: #e53935 (connection dot).
+- Background Color: #101010.
 - Background Transparency: 0%; adjustable to 100%. Text and icons remain opaque.
 
 ## Connection and states
@@ -33,3 +33,7 @@ Package a clean folder containing index.html, manifest.json, translation.json an
 Do not include older .icuewidget archives in the source folder used for packaging.
 
 Layout and connection states were checked in Chromium at Xeneon Edge S/M/L/XL horizontal and vertical dimensions. Final display and settings behavior should also be checked in iCUE on the physical device.
+
+## Dotted design
+Nothing OS-inspired typography uses the bundled Doto font by The Doto Project Authors, distributed under the SIL Open Font License in resources/Doto-OFL.txt. The font is loaded locally; no font service or internet connection is needed. This is an independent inspired design.
+Existing iCUE instances may retain saved colors. Set Text Color to #f2f0eb, Accent Color to #e53935 and Background Color to #101010, or add a fresh widget instance to use the new defaults.
