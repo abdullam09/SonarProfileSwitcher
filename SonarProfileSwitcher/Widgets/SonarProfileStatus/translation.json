@@ -1,0 +1,33 @@
+{
+  "en": {
+    "translation": {
+      "Sonar Profile Status": "Sonar Profile Status",
+      "Sonar Profile Switcher": "Sonar Profile Switcher",
+      "Show Keyboard Layout": "Show Keyboard Layout",
+      "Refresh Interval": "Refresh Interval",
+      "Text Color": "Text Color",
+      "Accent Color": "Accent Color",
+      "Background Color": "Background Color",
+      "Background Transparency": "Background Transparency",
+      "Widget Personalization": "Widget Personalization",
+      "Connecting": "Connecting",
+      "Connecting…": "Connecting…",
+      "Connecting to SonarProfileSwitcher…": "Connecting to SonarProfileSwitcher…",
+      "Active profile": "Active profile",
+      "Last known profile": "Last known profile",
+      "Connected": "Connected",
+      "Offline": "Offline",
+      "Unavailable": "Unavailable",
+      "No profile": "No profile",
+      "No active profile": "No active profile",
+      "Waiting for app…": "Waiting for app…",
+      "Start SonarProfileSwitcher to connect.": "Start SonarProfileSwitcher to connect.",
+      "No profile was reported. Check Sonar in SteelSeries GG.": "No profile was reported. Check Sonar in SteelSeries GG.",
+      "Keyboard layout unavailable": "Keyboard layout unavailable",
+      "Waiting for keyboard layout": "Waiting for keyboard layout",
+      "Last reading": "Last reading",
+      "seconds ago": "seconds ago",
+      "The app returned invalid data. Retrying…": "The app returned invalid data. Retrying…"
+    }
+  }
+}

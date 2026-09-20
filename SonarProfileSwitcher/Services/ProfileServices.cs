@@ -1,30 +1,53 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using SonarProfileSwitcher.Interfaces;
 using SonarProfileSwitcher.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SonarProfileSwitcher.Services
+namespace SonarProfileSwitcher.Services;
+
+public class ProfileServices : IProfileServices
 {
-    public class ProfileServices : IProfileServices
-    {
-        private readonly IFileServices _fileServices;
-        public ProfileServices(IFileServices fileServices)
-        {
-            _fileServices = fileServices;
-        }
+    public string FilePath { get; } = File.Exists(@"F:\Sonar Auto Switch\profiles.json")
+        ? @"F:\Sonar Auto Switch\profiles.json"
+        : Path.Combine(AppContext.BaseDirectory, "profiles.json");
 
-        public IList<Profile> GetProfiles()
+    public ProfileServices(IFileServices fileServices) { }
+
+    public IList<Profile> GetProfiles()
+    {
+        if (!File.Exists(FilePath))
+            return new List<Profile>();
+        return JsonConvert.DeserializeObject<List<Profile>>(File.ReadAllText(FilePath))
+            ?? throw new InvalidDataException("profiles.json must contain an array of profile mappings.");
+    }
+
+    public void SaveMapping(string executable, string profileName)
+    {
+        var name = Path.GetFileName(executable.Trim());
+        if (name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+            name = name[..^4];
+        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(profileName))
+            throw new ArgumentException("Choose an executable and a Sonar profile.");
+
+        // Reload before editing to preserve mappings added since the manager was opened.
+        var profiles = GetProfiles();
+        var existing = profiles.FirstOrDefault(p =>
+            string.Equals(p.exeFile, name, StringComparison.OrdinalIgnoreCase));
+        if (existing is null)
+            profiles.Add(new Profile { exeFile = name, profileName = profileName });
+        else
+            existing.profileName = profileName;
+
+        // Readers see either the old document or the complete new document.
+        var temporaryPath = FilePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        try
         {
-            var fileContent = _fileServices.ReadFile(@"F:\Sonar Auto Switch\profiles.json");
-            if (fileContent != null)
-            {
-                return JsonConvert.DeserializeObject<List<Profile>>(fileContent);
-            }
-            throw new InvalidOperationException("profiles contenct can't be parsed");
+            File.WriteAllText(temporaryPath, JsonConvert.SerializeObject(profiles, Formatting.Indented));
+            File.Move(temporaryPath, FilePath, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+                File.Delete(temporaryPath);
         }
     }
 }

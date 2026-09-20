@@ -3,53 +3,188 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Sonar Profile Status</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>tr('Sonar Profile Status')</title>
   <link rel="icon" type="image/svg+xml" href="resources/icon.svg" />
-  <meta name="x-icue-widget-group" content="Sonar Profile Switcher" />
+  <meta name="x-icue-widget-group" content="tr('Sonar Profile Switcher')" />
+  <meta name="x-icue-property" content="showKeyboard" data-label="tr('Show Keyboard Layout')" data-type="switch" data-default="true" />
+  <meta name="x-icue-property" content="refreshInterval" data-label="tr('Refresh Interval')" data-type="slider" data-default="1" data-min="1" data-max="30" data-step="1" data-unit-label="'s'" />
+  <meta name="x-icue-property" content="textColor" data-label="tr('Text Color')" data-type="color" data-default="'#f5f8fc'" />
+  <meta name="x-icue-property" content="accentColor" data-label="tr('Accent Color')" data-type="color" data-default="'#56e0d0'" />
+  <meta name="x-icue-property" content="backgroundColor" data-label="tr('Background Color')" data-type="color" data-default="'#101c2c'" />
+  <meta name="x-icue-property" content="transparency" data-label="tr('Background Transparency')" data-type="slider" data-default="0" data-min="0" data-max="100" data-step="1" data-unit-label="'%'" />
+  <script type="application/json" id="x-icue-groups">
+    [{"title":"tr('Sonar Profile Status')","properties":["showKeyboard","refreshInterval"]},{"title":"tr('Widget Personalization')","properties":["textColor","accentColor","backgroundColor","transparency"]}]
+  </script>
   <style>
+    :root {
+      --layout-unit: 1vmin;
+      --pad: calc(var(--layout-unit) * 7);
+      --gap: calc(var(--layout-unit) * 4);
+      --hero: calc(var(--layout-unit) * 16);
+      --label: calc(var(--layout-unit) * 4);
+      --secondary: calc(var(--layout-unit) * 6);
+      --icon: calc(var(--layout-unit) * 11);
+      --radius: calc(var(--layout-unit) * 4);
+      --text-color: #f5f8fc; --accent-color: #56e0d0;
+      --background-color: #101c2c; --background-opacity: 1;
+    }
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; background: #10131a; color: #f7f8fb; font-family: Arial, sans-serif; overflow: hidden; }
-    main { min-height: 100vh; padding: 7vh 8vw; display: flex; flex-direction: column; justify-content: center; gap: 4vh; }
-    .eyebrow { color: #8ea0bd; font-size: clamp(14px, 3vw, 28px); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
-    .profile { font-size: clamp(30px, 9vw, 98px); font-weight: 800; line-height: 1.05; overflow-wrap: anywhere; }
-    .layout { color: #56bcff; font-size: clamp(20px, 5vw, 52px); font-weight: 700; }
-    .status { color: #8ea0bd; font-size: clamp(12px, 2.5vw, 24px); }
-    .offline .profile, .offline .layout { color: #657089; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+    body { color: var(--text-color); font-family: "Segoe UI", Arial, sans-serif; background: transparent; }
+    .background { position: absolute; inset: 0; background: var(--background-color); opacity: var(--background-opacity); }
+    main { position: relative; height: 100%; display: flex; flex-direction: column; justify-content: center; gap: var(--gap); padding: var(--pad); }
+    header { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); }
+    .brand { display: flex; align-items: center; gap: calc(var(--gap) * .55); min-width: 0; }
+    .headset { width: var(--icon); height: var(--icon); flex-shrink: 0; color: var(--accent-color); }
+    .brand-name, .caption { font-size: var(--label); font-weight: 600; letter-spacing: .13em; text-transform: uppercase; opacity: .75; }
+    .badge { display: flex; align-items: center; gap: calc(var(--gap) * .4); white-space: nowrap; font-size: var(--label); font-weight: 600; padding: calc(var(--gap) * .4) calc(var(--gap) * .7); border: 1px solid currentColor; border-radius: var(--radius); color: var(--accent-color); }
+    .dot { height: calc(var(--layout-unit) * 1.6); width: calc(var(--layout-unit) * 1.6); border-radius: 50%; background: currentColor; }
+    .hero-block { min-width: 0; display: flex; flex-direction: column; gap: calc(var(--gap) * .45); }
+    .profile { margin: 0; font-size: var(--hero); font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.14; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .keyboard { display: flex; align-items: center; gap: calc(var(--gap) * .65); font-size: var(--secondary); min-width: 0; }
+    .keyboard svg { width: var(--secondary); height: var(--secondary); color: var(--accent-color); flex-shrink: 0; }
+    #layout { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .note { margin: 0; font-size: var(--label); line-height: 1.45; opacity: .75; }
+    [data-state="offline"] .badge, [data-state="error"] .badge { color: #ffcb7b; }
+    [data-state="loading"] .badge, [data-state="empty"] .badge { color: var(--text-color); opacity: .75; }
+    [hidden] { display: none !important; }
+    @media (max-aspect-ratio: 3/2) { :root { --hero: calc(var(--layout-unit) * 12); } }
+    @media (max-aspect-ratio: 1/1) {
+      :root { --layout-unit: calc(100vw * 416 / 69600); }
+      main { gap: calc(var(--gap) * 1.5); }
+      header { flex-wrap: wrap; }
+    }
+    @media (min-aspect-ratio: 3/1) {
+      main { padding-left: calc(var(--pad) * 1.5); padding-right: calc(var(--pad) * 1.5); }
+    }
+    @media (max-width: 400px) and (max-height: 240px) {
+      .brand-name, .caption { display: none; }
+    }
   </style>
 </head>
 <body>
-  <main id="app" class="offline">
-    <div class="eyebrow">SteelSeries Sonar</div>
-    <div id="profile" class="profile">Waiting for app…</div>
-    <div id="layout" class="layout"></div>
-    <div id="status" class="status">Start SonarProfileSwitcher to connect.</div>
+  <div class="background" aria-hidden="true"></div>
+  <main id="app" data-state="loading">
+    <header>
+      <div class="brand">
+        <svg class="headset" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <path d="M15 34v-4a17 17 0 0 1 34 0v4" stroke="currentColor" stroke-width="6" stroke-linecap="round"></path>
+          <rect x="10" y="29" width="10" height="19" rx="4" fill="currentColor"></rect>
+          <rect x="44" y="29" width="10" height="19" rx="4" fill="currentColor"></rect>
+          <path d="M27 30v12m10-12v12m-5-17v22" stroke="currentColor" stroke-width="4" stroke-linecap="round"></path>
+        </svg>
+        <span class="brand-name">SteelSeries Sonar</span>
+      </div>
+      <div class="badge" role="status"><span class="dot" aria-hidden="true"></span><span id="connection">Connecting</span></div>
+    </header>
+    <section class="hero-block">
+      <div class="caption" id="caption">Active profile</div>
+      <h1 class="profile" id="profile">Connecting…</h1>
+    </section>
+    <div class="keyboard" id="keyboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <rect x="2" y="5" width="20" height="14" rx="3"></rect><path d="M6 9h2m3 0h2m3 0h2M6 12h2m3 0h2m3 0h2M7 16h10"></path>
+      </svg>
+      <span id="layout">Waiting for keyboard layout</span>
+    </div>
+    <p class="note" id="note">Connecting to SonarProfileSwitcher…</p>
   </main>
   <script>
-    const endpoint = "http://127.0.0.1:9783/status";
-    const profile = document.getElementById("profile");
-    const layout = document.getElementById("layout");
-    const status = document.getElementById("status");
-    const app = document.getElementById("app");
-
-    async function refresh() {
-      try {
-        const response = await fetch(endpoint, { cache: "no-store" });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-        profile.textContent = data.ProfileName || "Flat";
-        layout.textContent = data.KeyboardLayout ? `Keyboard: ${data.KeyboardLayout.toUpperCase()}` : "Keyboard layout unavailable";
-        status.textContent = "Connected";
-        app.classList.remove("offline");
-      } catch {
-        profile.textContent = "Waiting for app…";
-        layout.textContent = "";
-        status.textContent = "Start SonarProfileSwitcher to connect.";
-        app.classList.add("offline");
+    (function () {
+      const endpoint = "http://127.0.0.1:9783/status";
+      const el = id => document.getElementById(id);
+      const root = document.documentElement;
+      let interval = 1000, timer = null, controller = null, stopped = false;
+      let last = null, lastReceived = 0, state = "loading", keyboardVisible = true;
+      const messages = {};
+      function t(key) { return messages[key] || key; }
+      async function translate() {
+        if (typeof tr !== "function") return;
+        const keys = ["Connecting", "Connecting…", "Connecting to SonarProfileSwitcher…", "Active profile", "Last known profile",
+          "Connected", "Offline", "Unavailable", "No profile", "No active profile", "Waiting for app…",
+          "Start SonarProfileSwitcher to connect.", "No profile was reported. Check Sonar in SteelSeries GG.",
+          "Keyboard layout unavailable", "Waiting for keyboard layout", "Last reading", "seconds ago",
+          "The app returned invalid data. Retrying…"];
+        await Promise.all(keys.map(async key => { try { messages[key] = await tr(key); } catch {} }));
+        render();
       }
-    }
-
-    refresh();
-    setInterval(refresh, 1000);
+      function color(value, fallback) { return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value) ? value : fallback; }
+      function bounded(value, fallback, min, max) {
+        const n = Number(value);
+        return Number.isFinite(n) ? Math.max(min, Math.min(max, n)) : fallback;
+      }
+      function settings() {
+        root.style.setProperty("--text-color", color(typeof textColor !== "undefined" ? textColor : null, "#f5f8fc"));
+        root.style.setProperty("--accent-color", color(typeof accentColor !== "undefined" ? accentColor : null, "#56e0d0"));
+        root.style.setProperty("--background-color", color(typeof backgroundColor !== "undefined" ? backgroundColor : null, "#101c2c"));
+        root.style.setProperty("--background-opacity", 1 - bounded(typeof transparency !== "undefined" ? transparency : 0, 0, 0, 100) / 100);
+        keyboardVisible = typeof showKeyboard === "undefined" || (showKeyboard !== false && showKeyboard !== "false" && showKeyboard !== 0);
+        const next = bounded(typeof refreshInterval !== "undefined" ? refreshInterval : 1, 1, 1, 30) * 1000;
+        const changed = interval !== next;
+        interval = next;
+        render();
+        if (changed && !controller && !stopped) { clearTimeout(timer); timer = setTimeout(refresh, interval); }
+      }
+      function render() {
+        el("app").dataset.state = state;
+        const stale = (state === "offline" || state === "error") && last;
+        el("caption").textContent = t(stale ? "Last known profile" : "Active profile");
+        el("connection").textContent = t({loading:"Connecting", online:"Connected", offline:"Offline", error:"Unavailable", empty:"No profile"}[state]);
+        el("profile").textContent = last ? last.ProfileName : t(state === "loading" ? "Connecting…" : state === "empty" ? "No active profile" : "Waiting for app…");
+        el("profile").title = el("profile").textContent;
+        el("keyboard").hidden = !keyboardVisible;
+        if (getComputedStyle(el("keyboard")).display !== "none")
+          el("layout").textContent = last ? (last.KeyboardLayout.toUpperCase() || t("Keyboard layout unavailable")) : t("Waiting for keyboard layout");
+        let note = "";
+        if (state === "loading") note = t("Connecting to SonarProfileSwitcher…");
+        if (state === "empty") note = t("No profile was reported. Check Sonar in SteelSeries GG.");
+        if (state === "offline" || state === "error")
+          note = last ? t("Last reading") + " · " + Math.max(0, Math.floor((Date.now() - lastReceived) / 1000)) + " " + t("seconds ago")
+            : t(state === "error" ? "The app returned invalid data. Retrying…" : "Start SonarProfileSwitcher to connect.");
+        el("note").textContent = note;
+        el("note").hidden = !note;
+      }
+      async function refresh() {
+        if (stopped || controller) return;
+        clearTimeout(timer);
+        const request = new AbortController();
+        controller = request;
+        const timeout = setTimeout(() => request.abort(), 3000);
+        let invalid = false;
+        try {
+          const response = await fetch(endpoint, {cache:"no-store", signal:request.signal});
+          if (!response.ok) throw new Error("HTTP error");
+          invalid = true;
+          const data = await response.json();
+          if (!data || typeof data.ProfileName !== "string" || (data.KeyboardLayout != null && typeof data.KeyboardLayout !== "string"))
+            throw new Error("Invalid status");
+          if (stopped) return;
+          if (!data.ProfileName.trim()) { last = null; state = "empty"; }
+          else {
+            last = {ProfileName:data.ProfileName.trim(), KeyboardLayout:data.KeyboardLayout || ""};
+            lastReceived = Date.now();
+            state = "online";
+          }
+        } catch {
+          if (stopped) return;
+          state = invalid ? "error" : "offline";
+        } finally {
+          clearTimeout(timeout);
+          controller = null;
+          if (!stopped) { render(); timer = setTimeout(refresh, interval); }
+        }
+      }
+      function pause() { stopped = true; clearTimeout(timer); if (controller) controller.abort(); }
+      function resume() { stopped = false; if (!controller) refresh(); }
+      icueEvents = {onDataUpdated:settings, onICUEInitialized:function () { settings(); translate(); }};
+      document.addEventListener("visibilitychange", () => { if (document.hidden) pause(); else resume(); });
+      window.addEventListener("pagehide", pause);
+      window.addEventListener("pageshow", resume);
+      settings();
+      if (typeof iCUE_initialized !== "undefined" && iCUE_initialized) translate();
+      refresh();
+    }());
   </script>
 </body>
 </html>

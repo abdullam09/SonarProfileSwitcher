@@ -1,44 +1,50 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using SonarProfileSwitcher.Interfaces;
 using SonarProfileSwitcher.Services;
+using SonarProfileSwitcher.UI;
 using Serilog;
 using Serilog.Formatting.Compact;
-using System.Runtime.InteropServices;
 
-namespace SonarProfileSwitcher
+namespace SonarProfileSwitcher;
+
+public class Program
 {
-    public class Program
+    [STAThread]
+    public static void Main(string[] args)
     {
-        public static async Task Main(string[] args)
+        ApplicationConfiguration.Initialize();
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .WriteTo.File(new CompactJsonFormatter(), @"F:\Sonar Auto Switch\logs\log-.txt", rollingInterval: RollingInterval.Day)
+            .CreateLogger();
+        using var host = Host.CreateDefaultBuilder(args)
+            .UseSerilog()
+            .ConfigureServices(services =>
+            {
+                services.AddHostedService<MainProcess>();
+                services.AddTransient<ISteelSeriesSonarService, SteelSeriesSonarService>();
+                services.AddTransient<IFileServices, FileServices>();
+                services.AddSingleton<ProfileServices>();
+                services.AddSingleton<IProfileServices>(provider => provider.GetRequiredService<ProfileServices>());
+                services.AddTransient<IProcessServices, ProcessServices>();
+                services.AddTransient<IKeyboardLayoutService, KeyboardLayoutService>();
+                services.AddSingleton<IWidgetStateService, WidgetStateService>();
+            })
+            .Build();
+        host.StartAsync().GetAwaiter().GetResult();
+        try
         {
-            // Configure Serilog
-            Log.Logger = new LoggerConfiguration()
-                .WriteTo.Console()
-                .WriteTo.File(new CompactJsonFormatter(), @"F:\Sonar Auto Switch\logs\log-.txt", rollingInterval: RollingInterval.Day)
-                .CreateLogger();
-
-            // Create a host builder
-            var host = Host.CreateDefaultBuilder(args)
-                .UseSerilog()
-                .ConfigureServices((hostContext, services) =>
-                {
-                    // Register services with dependency injection
-                    services.AddSingleton<IHostedService, MainProcess>();
-                    services.AddTransient<ISteelSeriesSonarService, SteelSeriesSonarService>();
-                    services.AddTransient<IFileServices, FileServices>();
-                    services.AddTransient<IProfileServices, ProfileServices>();
-                    services.AddTransient<IProcessServices, ProcessServices>();
-                    services.AddTransient<IKeyboardLayoutService, KeyboardLayoutService>();
-                    services.AddSingleton<IWidgetStateService, WidgetStateService>();
-                })
-                .Build();
-
-            // Resolve dependencies from the container
-            var mainProcess = host.Services.GetRequiredService<IHostedService>();
-
-            await host.RunAsync();
+            using var tray = new ProfileTrayContext(
+                host.Services.GetRequiredService<ProfileServices>(),
+                host.Services.GetRequiredService<ISteelSeriesSonarService>(),
+                args.Contains("--manage", StringComparer.OrdinalIgnoreCase));
+            Application.Run(tray);
+        }
+        finally
+        {
+            host.StopAsync().GetAwaiter().GetResult();
+            Log.CloseAndFlush();
         }
     }
 }

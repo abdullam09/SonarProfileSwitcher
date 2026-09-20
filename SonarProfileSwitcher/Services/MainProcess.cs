@@ -1,11 +1,11 @@
-﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SonarProfileSwitcher.Interfaces;
 using SonarProfileSwitcher.Models;
 
 namespace SonarProfileSwitcher.Services
 {
-    public class MainProcess : IHostedService
+    public class MainProcess : BackgroundService
     {
         private readonly TimeSpan _interval = TimeSpan.FromSeconds(2);
         private readonly ILogger<MainProcess> _logger;
@@ -30,7 +30,7 @@ namespace SonarProfileSwitcher.Services
             _keyboardLayoutService = keyboardLayoutService;
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Main Process started");
 
@@ -80,9 +80,14 @@ namespace SonarProfileSwitcher.Services
 
                     await Task.Delay(_interval, cancellationToken);
                 }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex.ToString());
+                    await Task.Delay(_interval, cancellationToken);
                 }
             }
         }
@@ -110,10 +115,10 @@ namespace SonarProfileSwitcher.Services
             _widgetStateService.Update(activeProfile?.profileName ?? "Flat", keyboardLayout ?? "");
         }
 
-        public Task StopAsync(CancellationToken cancellationToken)
+        public override Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Main Process stopped");
-            return Task.CompletedTask;
+            return base.StopAsync(cancellationToken);
         }
     }
 }
